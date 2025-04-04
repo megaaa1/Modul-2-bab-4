@@ -1,16 +1,28 @@
-import java.util.Scanner;
+import java.util.Scanner; // Import Scanner untuk input dari user
 
 public class Swalayan {
-    // Class Pelanggan sebagai inner class
+    /*
+     * Class Pelanggan sebagai inner class yang mengimplementasikan encapsulation
+     * Semua atribut dibuat private untuk melindungi data dari akses langsung
+     */
     static class Pelanggan {
+        // Atribut private untuk enkapsulasi data
         private String nomorPelanggan;
         private String nama;
         private double saldo;
-        private String pin;
-        private int percobaanLogin;
-        private boolean terkunci;
+        private String pin; // PIN disimpan sebagai private untuk keamanan
+        private int percobaanLogin; // Menghitung percobaan login gagal
+        private boolean terkunci; // Status kunci akun
 
+        /*
+         * Constructor untuk inisialisasi objek Pelanggan
+         * parameter nomorPelanggan - 10 digit, 2 digit pertama menentukan jenis akun
+         * parameter nama - nama pelanggan
+         * parameter saldo - saldo awal
+         * parameter pin - PIN 4 digit untuk autentikasi
+         */
         public Pelanggan(String nomorPelanggan, String nama, double saldo, String pin) {
+            // Validasi nomor pelanggan
             if (nomorPelanggan.length() != 10) {
                 throw new IllegalArgumentException("Nomor pelanggan harus 10 digit");
             }
@@ -22,6 +34,10 @@ public class Swalayan {
             this.terkunci = false;
         }
 
+        /*
+         * Method untuk menentukan jenis akun berdasarkan 2 digit pertama nomor pelanggan
+         * return String jenis akun (Silver, Gold, Platinum)
+         */
         public String getJenisAkun() {
             String prefix = nomorPelanggan.substring(0, 2);
             switch (prefix) {
@@ -32,6 +48,11 @@ public class Swalayan {
             }
         }
 
+        /*
+         * Method untuk verifikasi PIN
+         * parameter pinMasukan - PIN yang dimasukkan user
+         * return true jika PIN benar, false jika salah
+         */
         public boolean verifikasiPin(String pinMasukan) {
             if (terkunci) {
                 System.out.println("Akun terkunci karena terlalu banyak percobaan salah.");
@@ -39,19 +60,24 @@ public class Swalayan {
             }
             
             if (pinMasukan.equals(pin)) {
-                percobaanLogin = 0;
+                percobaanLogin = 0; // Reset counter percobaan jika berhasil
                 return true;
             } else {
                 percobaanLogin++;
                 System.out.println("PIN salah. Percobaan tersisa: " + (3 - percobaanLogin));
                 if (percobaanLogin >= 3) {
-                    terkunci = true;
+                    terkunci = true; // Kunci akun setelah 3x salah
                     System.out.println("Akun Anda telah terkunci!");
                 }
                 return false;
             }
         }
 
+        /*
+         * Method untuk top up saldo
+         * parameter jumlah - jumlah yang akan di-top up
+         * return true jika berhasil, false jika gagal
+         */
         public boolean topUp(double jumlah) {
             if (jumlah <= 0) {
                 System.out.println("Jumlah top up harus lebih dari 0");
@@ -63,6 +89,11 @@ public class Swalayan {
             return true;
         }
 
+        /*
+         * Method untuk transaksi pembelian
+         * parameter jumlah - jumlah pembelian
+         * return true jika berhasil, false jika gagal
+         */
         public boolean belanja(double jumlah) {
             if (terkunci) {
                 System.out.println("Akun terkunci, tidak dapat melakukan transaksi");
@@ -74,11 +105,13 @@ public class Swalayan {
             }
             
             double saldoSementara = saldo - jumlah;
+            // Validasi saldo minimal Rp10.000
             if (saldoSementara < 10000) {
                 System.out.println("Transaksi gagal. Saldo minimal Rp10.000 harus tersisa");
                 return false;
             }
 
+            // Hitung cashback berdasarkan jenis akun
             double cashback = hitungCashback(jumlah);
             saldo = saldoSementara + cashback;
             
@@ -87,6 +120,11 @@ public class Swalayan {
             return true;
         }
 
+        /*
+         * Method private untuk menghitung cashback (hanya bisa diakses dari dalam class)
+         * parameter jumlahBelanja - jumlah pembelian
+         * return jumlah cashback yang didapat
+         */
         private double hitungCashback(double jumlahBelanja) {
             String jenis = getJenisAkun();
             double cashback = 0;
@@ -94,13 +132,15 @@ public class Swalayan {
             switch (jenis) {
                 case "Silver":
                     if (jumlahBelanja > 1000000) {
-                        cashback = jumlahBelanja * 0.05;
+                        cashback = jumlahBelanja * 0.05; // 5% untuk pembelian > 1jt
                     }
                     break;
                 case "Gold":
+                    // 7% untuk pembelian > 1jt, 2% untuk lainnya
                     cashback = jumlahBelanja * (jumlahBelanja > 1000000 ? 0.07 : 0.02);
                     break;
                 case "Platinum":
+                    // 10% untuk pembelian > 1jt, 5% untuk lainnya
                     cashback = jumlahBelanja * (jumlahBelanja > 1000000 ? 0.10 : 0.05);
                     break;
             }
@@ -108,6 +148,7 @@ public class Swalayan {
             return cashback;
         }
 
+        // Method untuk menampilkan informasi akun
         public void tampilkanInfoAkun() {
             System.out.println("\n=== Informasi Akun ===");
             System.out.println("Nomor Pelanggan: " + nomorPelanggan);
@@ -120,7 +161,7 @@ public class Swalayan {
 
     // Main program
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in); // Membuat objek Scanner untuk input
         
         // Inisialisasi data pelanggan
         Pelanggan[] daftarPelanggan = {
@@ -129,13 +170,14 @@ public class Swalayan {
             new Pelanggan("7412345678", "Citra Dewi", 3000000, "0000")
         };
         
-        Pelanggan pelangganAktif = null;
+        Pelanggan pelangganAktif = null; // Menyimpan pelanggan yang sedang login
         
-        System.out.println("=== SELAMAT DATANG DI SWALAYAN TINY ===");
+        System.out.println("=== SELAMAT DATANG DI SWALAYAN MEGA ===");
         
+        // Loop utama program
         while (true) {
             if (pelangganAktif == null) {
-                // Menu Login
+                // Menu Login jika belum login
                 System.out.println("\n=== MENU LOGIN ===");
                 System.out.print("Masukkan nomor pelanggan (10 digit): ");
                 String nomor = scanner.nextLine();
@@ -144,6 +186,7 @@ public class Swalayan {
                 String pin = scanner.nextLine();
                 
                 boolean ditemukan = false;
+                // Cari pelanggan berdasarkan nomor
                 for (Pelanggan pelanggan : daftarPelanggan) {
                     if (pelanggan.nomorPelanggan.equals(nomor)) {
                         ditemukan = true;
@@ -159,7 +202,7 @@ public class Swalayan {
                     System.out.println("Nomor pelanggan tidak ditemukan.");
                 }
             } else {
-                // Menu Utama
+                // Menu Utama setelah login
                 System.out.println("\n=== MENU UTAMA ===");
                 System.out.println("1. Lihat Informasi Akun");
                 System.out.println("2. Top Up Saldo");
@@ -175,6 +218,7 @@ public class Swalayan {
                     continue;
                 }
                 
+                // Proses pilihan menu
                 switch (pilihan) {
                     case 1:
                         pelangganAktif.tampilkanInfoAkun();
